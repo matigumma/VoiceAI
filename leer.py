@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import sys
 import os
-from pathlib import Path
-from openai import OpenAI
-
-api_key = os.environ.get("OPENAI_API_KEY")
+import sys
+from openai_speech import openai_speech
+from unreal_speech import unreal_speech
+from colorama import Fore, Style
 
 def main():
     # Read piped input
@@ -15,21 +14,21 @@ def main():
         print("No input received from the console.")
         return
 
-    # Initialize OpenAI client
-    client = OpenAI(api_key=api_key)
+    speech_file_path = None
 
-    # Generate speech using OpenAI API
-    speech_file_path = Path("/tmp") / "speech.mp3"
-    response = client.audio.speech.create(
-        model="tts-1",
-        voice="alloy",
-        input=input_text
-    )
+    try:
+        # Try using the unreal_speech function
+        print("Using unreal_speech function")
+        speech_file_path = unreal_speech(input_text)
+    except Exception as e:
+        print("unreal_speech failed with error:")
+        print(f"{Fore.RED}{e}{Style.RESET_ALL}")  # Colorized error message
+        # Fallback to openai_speech function
+        # speech_file_path = openai_speech(input_text)
 
-    response.stream_to_file(speech_file_path)
-
-    # Optionally, play the audio file using a system call (Mac-specific example)
-    os.system(f"afplay {speech_file_path}")
+    if speech_file_path:
+        # Optionally, play the audio file using a system call (Mac-specific example)
+        os.system(f"afplay {speech_file_path}")
 
 if __name__ == "__main__":
     main()
